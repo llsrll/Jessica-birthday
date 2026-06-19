@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Jessica!</title>
+    <style>
+        * {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            font-family: 'comic sans ms', cursive, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .container {
+            text-align: center;
+            z-index: 10;
+            padding: 2rem;
+            max-width: 800px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 32px 0 rgba(255,105,180,0.3);
+            transition: all 0.5s ease;
+        }
+        .container:hover {
+            box-shadow: 0 8px 32px rgba(255,105,180,0.5);
+        }
+        h1 {
+            font-size: 3.5rem;
+            color: #ff1493;
+            text-shadow: 0 0 10px rgba(255,255,255),
+                         0 0 20px rgba(255,255,255,0.8),
+                         0 0 30px rgba(255,20,147,0.6);
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: bounce-in 1.5s forwards 0.5s;
+        }
+        .typewriter-container {
+            display: block;
+            margin: 0 auto 2rem auto;
+            position: relative;
+            max-width: 100%;
+            overflow: hidden;
+            height: auto;
+            min-height: 3rem;
+        }
+        .typewriter-text {
+            position: relative;
+            white-space: normal;
+            overflow: hidden;
+            width: 0;
+            font-size: 1.4rem;
+            color: #8a2be2;
+            text-shadow: 1px 1px 4px rgba(255,255,255,0.6);
+            opacity: 1;
+            animation: typewriter 3s steps(60) forwards 1.5s;
+        }
+        .cursor {
+            position: absolute;
+            right: -5px;
+            width: 3px; height: 100%;
+            background-color: #8a2be2;
+            animation: blink 0.8s infinite;
+        }
+        .next-button {
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #ff1493, #8a2be2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,20,147,0.5);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fade-in 1s forwards 3s;
+        }
+        .next-button:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 6px 20px rgba(255,20,147,0.7);
+            background: linear-gradient(45deg, #8a2be2, #ff1493);
+        }
+        .audio-controls {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background-color: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .audio-controls button {
+            background: none; border: none;
+            font-size: 1.5rem; cursor: pointer;
+            color: #ff1493; transition: all 0.3s ease;
+        }
+        .audio-controls button:hover { transform: scale(1.2); color: #8a2be2; }
+        .audio-controls input { width: 100px; }
+
+        @keyframes bounce-in {
+            0%   { transform: scale(0.5); opacity: 0; }
+            60%  { transform: scale(1.1); opacity: 1; }
+            80%  { transform: scale(0.9); opacity: 1; }
+            100% { transform: scale(1);   opacity: 1; }
+        }
+        @keyframes fade-in {
+            0%   { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes typewriter {
+            from { width: 0; }
+            to   { width: 100%; }
+        }
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50%     { opacity: 0; }
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .typewriter-text { font-size: 1.1rem; }
+            .container { width: 90%; padding: 1rem; }
+            .next-button { padding: 0.8rem 2rem; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Happy Birthday,<br>Jessica!</h1>
+        <div class="typewriter-container">
+            <div class="typewriter-text">
+                Hello My Love! Ready For Your Special Surprise? Click The Button Below To See It!
+                <span class="cursor"></span>
+            </div>
+        </div>
+        <button class="next-button" onclick="goToNextPage()">See Your Surprise! 😍</button>
+    </div>
+
+    <div class="audio-controls">
+        <button id="play-pause">▶️</button>
+        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <audio id="birthday-song" loop>
+        <source src="https://archive.org/download/happy-birthday-instrumental/HAPPY%20BIRTHDAY%20INSTRUMENTAL.mp3" type="audio/mp3">
+    </audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script>
+        const audio = document.getElementById('birthday-song');
+        const playPauseButton = document.getElementById('play-pause');
+        const volumeControl = document.getElementById('volume-control');
+        let isPlaying = false;
+
+        // restore volume
+        const savedVol = localStorage.getItem('bdayVol');
+        if (savedVol) { audio.volume = savedVol; volumeControl.value = savedVol; }
+        else { audio.volume = 0.5; }
+
+        // auto-resume
+        const wasPlaying = localStorage.getItem('bdayPlaying');
+        if (wasPlaying === 'true') {
+            audio.play().then(() => {
+                isPlaying = true;
+                playPauseButton.innerHTML = '⏸️';
+            }).catch(() => {});
+        }
+
+        playPauseButton.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                playPauseButton.innerHTML = '▶️';
+                localStorage.setItem('bdayPlaying', 'false');
+            } else {
+                audio.play();
+                playPauseButton.innerHTML = '⏸️';
+                localStorage.setItem('bdayPlaying', 'true');
+            }
+            isPlaying = !isPlaying;
+        });
+
+        volumeControl.addEventListener('input', () => {
+            audio.volume = volumeControl.value;
+            localStorage.setItem('bdayVol', volumeControl.value);
+        });
+
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('bdayPlaying', isPlaying ? 'true' : 'false');
+            localStorage.setItem('bdayVol', audio.volume);
+        });
+
+        function goToNextPage() {
+            gsap.to('.next-button', {
+                scale: 1.2, yoyo: true, repeat: 1, duration: 0.3,
+                onComplete: () => {
+                    window.location.href = 'memorylane.html';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

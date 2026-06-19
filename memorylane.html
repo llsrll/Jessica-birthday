@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Lane 🎀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffcee6 0%, #ffd6f1 50%, #e4f9ff 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── FLOATING SHAPES (balloons, stars, dots) ── */
+        .floater {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(0)   rotate(0deg); opacity:0.85; }
+            50%  { transform: translateY(-30px) rotate(15deg); }
+            100% { transform: translateY(0)   rotate(0deg); opacity:0.85; }
+        }
+
+        /* confetti pieces */
+        .confetti-piece {
+            position: fixed;
+            width: 10px; height: 10px;
+            opacity: 0;
+            z-index: 0;
+            animation: confettiFall linear infinite;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        @keyframes confettiFall {
+            0%   { transform: translateY(-20px) rotate(0deg);   opacity:0.9; }
+            100% { transform: translateY(110vh)  rotate(360deg); opacity:0; }
+        }
+
+        /* ── MAIN CONTAINER ── */
+        .memory-lane-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px 20px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: floatAnim 3s ease-in-out infinite;
+        }
+        .header h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 3rem;
+            color: #ff4e91;
+            text-shadow: 3px 3px 0 rgba(255,165,213,0.5);
+            margin-bottom: 1rem;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        .header p {
+            font-size: 1.05rem;
+            color: #8858a3;
+            max-width: 680px;
+            margin: 0 auto;
+            line-height: 1.7;
+            background: rgba(255,255,255,0.55);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(255,105,180,0.2);
+        }
+
+        /* ── SLIDESHOW BTN ── */
+        .slideshow-controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.8rem;
+        }
+        .btn {
+            padding: 0.75rem 1.6rem;
+            margin: 0 0.4rem;
+            background: linear-gradient(45deg, #ff6ac4, #7873f5);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,110,196,0.5);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, #7873f5, #ff6ac4);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255,110,196,0.7);
+        }
+
+        /* ── GALLERY ── */
+        .gallery {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 1.5rem;
+            padding: 30px 10px 20px;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #ff6ac4 #ffcee6;
+            align-items: flex-start;
+        }
+        .gallery::-webkit-scrollbar { height: 8px; }
+        .gallery::-webkit-scrollbar-track { background:#ffcee6; border-radius:10px; }
+        .gallery::-webkit-scrollbar-thumb { background:#ff6ac4; border-radius:10px; }
+
+        /* ── MEMORY CARD ── */
+        .memory-card {
+            flex: 0 0 auto;
+            width: 270px;
+            height: 380px;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 8px solid white;
+            box-shadow: 0 10px 28px rgba(255,105,180,0.3);
+            transform: rotate(var(--rot, 0deg)) translateY(60px);
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.175,0.885,0.32,1.275),
+                        opacity 0.6s ease,
+                        box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .memory-card.visible {
+            transform: rotate(var(--rot, 0deg)) translateY(0);
+            opacity: 1;
+        }
+        .memory-card:hover {
+            box-shadow: 0 16px 40px rgba(255,105,180,0.5);
+            transform: rotate(0deg) translateY(-6px) scale(1.02);
+            z-index: 5;
+        }
+
+        .memory-card img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        .memory-card:hover img { transform: scale(1.07); }
+
+        /* tape on top */
+        .card-tape {
+            position: absolute;
+            width: 90px; height: 28px;
+            background: rgba(255,255,255,0.75);
+            top: -10px; left: 50%;
+            transform: translateX(-50%) rotate(var(--tape-rot, -2deg));
+            z-index: 4;
+            box-shadow: 0 2px 6px rgba(255,20,147,0.15);
+            border-radius: 3px;
+        }
+
+        /* sticker */
+        .card-sticker {
+            position: absolute;
+            font-size: 1.6rem;
+            z-index: 4;
+            bottom: 60px; right: 8px;
+            transform: rotate(15deg);
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        /* caption — slides up on hover (only for cards WITH captions) */
+        .memory-caption {
+            position: absolute;
+            bottom: -100%;
+            left: 0; width: 100%;
+            background: rgba(255,105,180,0.88);
+            color: white;
+            padding: 1rem 1.1rem;
+            transition: bottom 0.4s cubic-bezier(0.68,-0.55,0.27,1.55);
+            border-top-right-radius: 12px;
+            border-top-left-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+            text-align: center;
+            z-index: 3;
+        }
+        .memory-card:hover .memory-caption { bottom: 0; }
+
+        /* ── NAV BUTTONS ── */
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding: 0 0.5rem;
+        }
+        #backButton {
+            background: linear-gradient(45deg, #7873f5, #a78bfa);
+        }
+        #nextButton {
+            background: linear-gradient(45deg, #ff4e91, #ff9a8b);
+            font-size: 1.05rem;
+            padding: 1rem 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes floatAnim {
+            0%,100% { transform: translateY(0); }
+            50%     { transform: translateY(-10px); }
+        }
+        @keyframes heartbeat {
+            0%,100% { transform: scale(1); }
+            50%     { transform: scale(1.04); }
+        }
+        @keyframes bounce {
+            0%,100% { transform: rotate(15deg) translateY(0); }
+            50%     { transform: rotate(15deg) translateY(-6px); }
+        }
+        @keyframes pulse {
+            0%,100% { box-shadow: 0 4px 15px rgba(255,78,145,0.5); }
+            50%     { box-shadow: 0 8px 30px rgba(255,78,145,0.8); transform: translateY(-2px); }
+        }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        @media (max-width:600px) {
+            .header h1 { font-size:2rem; }
+            .memory-card { width:220px; height:310px; }
+        }
+
+        .audio-controls {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background-color: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+        }
+        .audio-controls button {
+            background: none; border: none;
+            font-size: 1.5rem; cursor: pointer;
+            color: #ff1493; transition: all 0.3s ease;
+        }
+        .audio-controls button:hover { transform: scale(1.2); color: #8a2be2; }
+        .audio-controls input { width: 100px; }
+    </style>
+</head>
+<body>
+
+<!-- CONFETTI + FLOATERS (created by JS) -->
+
+<div class="memory-lane-container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Our Memory Lane 💖</h1>
+        <p>
+            A journey through the most incredible moments we've shared together.
+            Hover over each photo to see why these memories mean so much to me! ✨ ❤️
+        </p>
+    </div>
+
+    <!-- SLIDESHOW CONTROL -->
+    <div class="slideshow-controls" style="display:none">
+        <button class="btn" id="slideshowBtn" onclick="toggleSlideshow()">▶ Start Slideshow</button>
+    </div>
+
+    <!-- HOVER HINT -->
+    <p style="text-align:center; color:#8858a3; font-size:0.95rem; margin-bottom:0.5rem; opacity:0.85;">
+        💡 Hover over the photos to reveal a special message ✨
+    </p>
+
+    <!-- GALLERY -->
+    <!--
+        Order: 1, 6, 2, 7, 3, 8, 4, 9, 5, 10
+        Captions on: 1,2,3,4,5 only
+    -->
+    <div class="gallery" id="gallery">
+
+        <!-- 1 -->
+        <div class="memory-card" style="--rot:-2deg" data-index="0">
+            <div class="card-tape" style="--tape-rot:-3deg"></div>
+            <img src="photo1.jpeg" alt="Memory 1" onerror="this.style.background='linear-gradient(135deg,#ff9a9e,#fad0c4)';this.removeAttribute('src')">
+            <div class="memory-caption">Happy birthday my princess. 🎂</div>
+            <div class="card-sticker">💖</div>
+        </div>
+
+        <!-- 6 -->
+        <div class="memory-card" style="--rot:2deg" data-index="5">
+            <div class="card-tape" style="--tape-rot:2deg"></div>
+            <img src="photo6.jpeg" alt="Memory 6" onerror="this.style.background='linear-gradient(135deg,#c97fff,#7000cc)';this.removeAttribute('src')">
+            <div class="card-sticker">🌸</div>
+        </div>
+
+        <!-- 2 -->
+        <div class="memory-card" style="--rot:-1deg" data-index="1">
+            <div class="card-tape" style="--tape-rot:-1deg"></div>
+            <img src="photo2.jpeg" alt="Memory 2" onerror="this.style.background='linear-gradient(135deg,#ff85c8,#c2006b)';this.removeAttribute('src')">
+            <div class="memory-caption">As long as you're smiling. 😊</div>
+            <div class="card-sticker">⭐</div>
+        </div>
+
+        <!-- 7 -->
+        <div class="memory-card" style="--rot:3deg" data-index="6">
+            <div class="card-tape" style="--tape-rot:3deg"></div>
+            <img src="photo7.jpeg" alt="Memory 7" onerror="this.style.background='linear-gradient(135deg,#ff8fab,#d4004a)';this.removeAttribute('src')">
+            <div class="card-sticker">✨</div>
+        </div>
+
+        <!-- 3 -->
+        <div class="memory-card" style="--rot:-2.5deg" data-index="2">
+            <div class="card-tape" style="--tape-rot:-2deg"></div>
+            <img src="photo3.jpeg" alt="Memory 3" onerror="this.style.background='linear-gradient(135deg,#ffd6f1,#ff69b4)';this.removeAttribute('src')">
+            <div class="memory-caption">Stay with me, I love you. 💕</div>
+            <div class="card-sticker">💫</div>
+        </div>
+
+        <!-- 8 -->
+        <div class="memory-card" style="--rot:1.5deg" data-index="7">
+            <div class="card-tape" style="--tape-rot:1deg"></div>
+            <img src="photo8.jpeg" alt="Memory 8" onerror="this.style.background='linear-gradient(135deg,#a78bfa,#7873f5)';this.removeAttribute('src')">
+            <div class="card-sticker">🎀</div>
+        </div>
+
+        <!-- 4 -->
+        <div class="memory-card" style="--rot:-1.5deg" data-index="3">
+            <div class="card-tape" style="--tape-rot:-3deg"></div>
+            <img src="photo4.jpeg" alt="Memory 4" onerror="this.style.background='linear-gradient(135deg,#ff9a8b,#ff6ac4)';this.removeAttribute('src')">
+            <div class="memory-caption">You will always be the favorite. 👑</div>
+            <div class="card-sticker">💝</div>
+        </div>
+
+        <!-- 9 -->
+        <div class="memory-card" style="--rot:2.5deg" data-index="8">
+            <div class="card-tape" style="--tape-rot:2deg"></div>
+            <img src="photo9.jpeg" alt="Memory 9" onerror="this.style.background='linear-gradient(135deg,#e4f9ff,#7873f5)';this.removeAttribute('src')">
+            <div class="card-sticker">🌟</div>
+        </div>
+
+        <!-- 5 -->
+        <div class="memory-card" style="--rot:-2deg" data-index="4">
+            <div class="card-tape" style="--tape-rot:-1deg"></div>
+            <img src="photo5.jpeg" alt="Memory 5" onerror="this.style.background='linear-gradient(135deg,#ffcee6,#ff4e91)';this.removeAttribute('src')">
+            <div class="memory-caption">I wish you were mine. 🌙</div>
+            <div class="card-sticker">💗</div>
+        </div>
+
+        <!-- 10 -->
+        <div class="memory-card" style="--rot:1deg" data-index="9">
+            <div class="card-tape" style="--tape-rot:3deg"></div>
+            <img src="photo10.jpeg" alt="Memory 10" onerror="this.style.background='linear-gradient(135deg,#ff6ac4,#ff4e91)';this.removeAttribute('src')">
+            <div class="card-sticker">🎉</div>
+        </div>
+
+    </div>
+
+    <!-- NAV BUTTONS -->
+    <div class="navigation-buttons">
+        <button class="btn" id="backButton" onclick="window.location.href='welcome.html'">← Back to Welcome</button>
+        <button class="btn" id="nextButton" onclick="window.location.href='cake.html'">✨ Next Surprise! 🎂</button>
+    </div>
+
+</div>
+
+<script>
+    /* ── CONFETTI ── */
+    const confColors = ['#ff6ac4','#7873f5','#ffd1f9','#ff4e91','#a78bfa','#ffcee6','#fff'];
+    for (let i = 0; i < 35; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left            = (Math.random() * 100) + 'vw';
+        el.style.top             = (Math.random() * -200) + 'px';
+        el.style.background      = confColors[Math.floor(Math.random() * confColors.length)];
+        el.style.width           = (6 + Math.random() * 8) + 'px';
+        el.style.height          = (6 + Math.random() * 8) + 'px';
+        el.style.borderRadius    = Math.random() > 0.5 ? '50%' : '2px';
+        el.style.animationDuration = (4 + Math.random() * 6) + 's';
+        el.style.animationDelay  = (Math.random() * 5) + 's';
+        document.body.appendChild(el);
+    }
+
+    /* ── FLOATING SHAPES (balloons & stars) ── */
+    const shapes = ['🎈','🎈','⭐','💖','🌸','🎀','💜','💛'];
+    for (let i = 0; i < 10; i++) {
+        const el = document.createElement('div');
+        el.className = 'floater';
+        el.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+        el.style.cssText = `
+            position:fixed; font-size:${1.5+Math.random()*1.8}rem;
+            left:${Math.random()*95}vw; top:${10+Math.random()*80}vh;
+            border-radius:0; background:none;
+            animation: floatUp ${3+Math.random()*4}s ease-in-out infinite;
+            animation-delay:${Math.random()*4}s;
+            pointer-events:none; z-index:0; opacity:0.75;
+        `;
+        document.body.appendChild(el);
+    }
+
+    /* ── CARD ENTRANCE ANIMATION ── */
+    const cards = document.querySelectorAll('.memory-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('visible'), i * 120);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    cards.forEach(c => observer.observe(c));
+
+    /* trigger visible for cards already in view */
+    setTimeout(() => {
+        cards.forEach((c, i) => {
+            setTimeout(() => c.classList.add('visible'), i * 120);
+        });
+    }, 300);
+
+    /* ── SLIDESHOW ── */
+    let slideshowInterval = null;
+    let isPlaying = false;
+    let currentCard = 0;
+
+    function toggleSlideshow() {
+        const btn = document.getElementById('slideshowBtn');
+        if (isPlaying) {
+            clearInterval(slideshowInterval);
+            isPlaying = false;
+            btn.textContent = '▶ Start Slideshow';
+        } else {
+            isPlaying = true;
+            btn.textContent = '⏸ Pause Slideshow';
+            slideshowInterval = setInterval(() => {
+                currentCard = (currentCard + 1) % cards.length;
+                cards[currentCard].scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+            }, 2000);
+        }
+    }
+</script>
+    <div class="audio-controls">
+        <button id="play-pause">▶️</button>
+        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5">
+    </div>
+    <audio id="birthday-song" loop>
+        <source src="https://archive.org/download/happy-birthday-instrumental/HAPPY%20BIRTHDAY%20INSTRUMENTAL.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        // ── PERSISTENT AUDIO ──
+        const audio = document.getElementById('birthday-song');
+        const playPauseButton = document.getElementById('play-pause');
+        const volumeControl = document.getElementById('volume-control');
+        const savedVol = localStorage.getItem('bdayVol');
+        if (savedVol) { audio.volume = savedVol; volumeControl.value = savedVol; }
+        else { audio.volume = 0.5; }
+        const wasPlaying = localStorage.getItem('bdayPlaying');
+        if (wasPlaying === 'true') {
+            audio.play().then(() => { isPlaying = true; playPauseButton.innerHTML = '⏸️'; }).catch(() => {});
+        }
+        playPauseButton.addEventListener('click', () => {
+            if (isPlaying) { audio.pause(); playPauseButton.innerHTML = '▶️'; localStorage.setItem('bdayPlaying','false'); }
+            else { audio.play(); playPauseButton.innerHTML = '⏸️'; localStorage.setItem('bdayPlaying','true'); }
+            isPlaying = !isPlaying;
+        });
+        volumeControl.addEventListener('input', () => {
+            audio.volume = volumeControl.value;
+            localStorage.setItem('bdayVol', volumeControl.value);
+        });
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('bdayPlaying', isPlaying ? 'true' : 'false');
+            localStorage.setItem('bdayVol', audio.volume);
+        });
+    </script>
+</body>
+</html>

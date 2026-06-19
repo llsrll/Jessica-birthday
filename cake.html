@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Jessica 🎂</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'comic sans ms',cursive,sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .page-title { margin-bottom: 0.2rem;
+            font-size: 2rem;
+            color: #ff1493;
+            text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 25px rgba(255,20,147,0.4);
+            margin-bottom: 2.5rem;
+            text-align: center;
+            animation: bounce-in 1s forwards;
+        }
+
+        /* ── CAKE CONTAINER ── */
+        #cake {
+            position: relative;
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── CANDLE (above cake, centered) ── */
+        .candle-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 0;
+            transform: translateY(-250px);
+            opacity: 0;
+            animation: drop-in 0.5s cubic-bezier(.3,1.4,.6,1) forwards 2.0s;
+            transition: transform 0.15s;
+            z-index: 10;
+        }
+        .candle-wrap:active { transform: scale(0.92); }
+
+        .flame {
+            width: 20px; height: 30px;
+            background: radial-gradient(ellipse at 50% 85%, #fffde0 0%, #ffe500 25%, #ff9500 60%, #ff3300 100%);
+            border-radius: 50% 50% 22% 22% / 60% 60% 40% 40%;
+            animation: flicker 0.45s ease-in-out infinite alternate;
+            box-shadow: 0 0 10px 5px rgba(255,210,0,0.7), 0 0 25px 10px rgba(255,100,0,0.3);
+            transition: all 0.35s ease;
+            margin-bottom: -1px;
+        }
+        .flame.out { width:0; height:0; box-shadow:none; opacity:0; }
+
+        .smoke {
+            position: absolute;
+            top: -8px; left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            background: rgba(160,160,160,0.6);
+            border-radius: 3px;
+            height: 0; opacity: 0;
+        }
+        .smoke.puff { animation: smoke-rise 1.6s ease-out forwards; }
+
+        .wick { width:3px; height:9px; background:#2a1500; border-radius:2px; }
+
+        .candle-body {
+            width: 24px; height: 62px;
+            background: linear-gradient(to bottom, #ff85c8, #c2006b);
+            border-radius: 5px 5px 3px 3px;
+            position: relative; overflow: hidden;
+        }
+        .candle-body::before {
+            content:'';
+            position:absolute; inset:0;
+            background: repeating-linear-gradient(-50deg, transparent 0px, transparent 9px, rgba(255,255,255,0.15) 9px, rgba(255,255,255,0.15) 12px);
+        }
+        .candle-body::after {
+            content:'';
+            position:absolute;
+            left:5px; top:6px;
+            width:5px; height:80%;
+            background:rgba(255,255,255,0.28);
+            border-radius:3px;
+        }
+
+        /* ── LAYERS ── */
+        .layer {
+            width: 220px;
+            transform: translateY(-300px);
+            opacity: 0;
+            /* no gap between layers */
+            display: block;
+            line-height: 0;
+        }
+
+        .layer-body {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            line-height: normal;
+        }
+
+        /* drop-in timing */
+        .layer-top    { animation: drop-in 0.55s cubic-bezier(.3,1.4,.6,1) forwards 0.4s; }
+        .layer-mid    { animation: drop-in 0.55s cubic-bezier(.3,1.4,.6,1) forwards 0.9s; }
+        .layer-bottom { animation: drop-in 0.55s cubic-bezier(.3,1.4,.6,1) forwards 1.4s; }
+
+        /* heights */
+        .layer-top    .layer-body { height: 55px; background: linear-gradient(135deg,#ff85c8,#c2006b); border-radius:6px 6px 0 0; }
+        .layer-mid    .layer-body { height: 55px; background: linear-gradient(135deg,#c97fff,#7000cc); border-radius:0; }
+        .layer-bottom .layer-body { height: 60px; background: linear-gradient(135deg,#ff8fab,#d4004a); border-radius:0 0 8px 8px; }
+
+        /* shine */
+        .layer-body::after {
+            content:'';
+            position:absolute;
+            left:8px; top:0;
+            width:16px; height:100%;
+            background:rgba(255,255,255,0.18);
+            border-radius:4px;
+        }
+
+        /* polka dots */
+        .dot {
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,0.22);
+        }
+
+        /* text on layers */
+        .layer-label {
+            position:absolute;
+            width:100%;
+            text-align:center;
+            color:rgba(255,255,255,0.92);
+            font-weight:bold;
+            text-shadow:0 1px 3px rgba(100,0,80,0.5);
+            pointer-events:none;
+        }
+
+        /* plate */
+        .plate {
+            width: 260px;
+            height: 16px;
+            background: linear-gradient(to bottom,#f0f0f0,#cccccc);
+            border-radius: 50%;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+            transform: translateY(-300px);
+            opacity: 0;
+            animation: drop-in 0.5s cubic-bezier(.3,1.4,.6,1) forwards 1.9s;
+            margin-top: -2px;
+        }
+
+        /* ── TAP HINT ── */
+        .tap-hint {
+            font-size: 1rem;
+            color: #ff1493;
+            font-weight: bold;
+            margin-top: 1.2rem;
+            opacity: 0;
+            animation: fade-in 0.6s forwards 2.7s;
+            text-shadow: 0 0 8px rgba(255,255,255,0.7);
+            text-align: center;
+        }
+
+        /* ── MESSAGE ── */
+        .message-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(255,20,147,0.15);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 1.2rem;
+        }
+        .message-overlay.show { display:flex; animation: fade-in 0.7s forwards; }
+
+        .message-box {
+            background: rgba(255,255,255,0.97);
+            border-radius: 28px;
+            padding: 2rem 1.8rem;
+            max-width: 460px; width: 100%;
+            text-align: center;
+            box-shadow: 0 12px 55px rgba(255,20,147,0.45);
+            animation: bounce-in 0.7s forwards;
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+        .message-box .big-emoji { font-size:3.5rem; display:block; margin-bottom:0.6rem; animation: float 2s ease-in-out infinite; }
+        .message-box h2 { font-size:1.7rem; color:#ff1493; margin-bottom:1rem; }
+        .message-box p { font-size:1.05rem; color:#8a2be2; line-height:1.9; text-align:left; }
+        .close-btn {
+            margin-top:1.4rem; padding:0.8rem 2.2rem;
+            font-size:1.05rem;
+            background:linear-gradient(45deg,#ff1493,#8a2be2);
+            color:white; border:none; border-radius:50px; cursor:pointer;
+            box-shadow:0 4px 15px rgba(255,20,147,0.4);
+            transition:all 0.3s ease;
+        }
+        .close-btn:hover { transform:scale(1.05) translateY(-3px); }
+
+        /* ── SPARKLE / CONFETTI ── */
+        .sparkle { position:fixed; pointer-events:none; font-size:1.5rem; animation:sparkle-fly 1.3s ease-out forwards; z-index:200; }
+        @keyframes sparkle-fly { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-100px) scale(0.2)} }
+
+        .confetti-piece { position:fixed; width:10px; height:10px; border-radius:2px; pointer-events:none; z-index:200; animation:confetti-burst 1.5s ease-out forwards; }
+        @keyframes confetti-burst { 0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)} 100%{opacity:0;transform:var(--tx) rotate(720deg) scale(0.3)} }
+
+        /* ── KEYFRAMES ── */
+        @keyframes drop-in { 0%{transform:translateY(-300px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+        @keyframes flicker { 0%{transform:scaleX(1) scaleY(1) rotate(-3deg)} 100%{transform:scaleX(0.87) scaleY(1.13) rotate(3deg)} }
+        @keyframes smoke-rise { 0%{height:0;opacity:0.8;top:-5px} 50%{height:32px;opacity:0.5;top:-37px} 100%{height:55px;opacity:0;top:-62px} }
+        @keyframes bounce-in { 0%{transform:scale(0.5);opacity:0} 60%{transform:scale(1.1);opacity:1} 80%{transform:scale(0.95)} 100%{transform:scale(1);opacity:1} }
+        @keyframes fade-in { from{opacity:0} to{opacity:1} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+        .audio-controls {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background-color: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+        }
+        .audio-controls button {
+            background: none; border: none;
+            font-size: 1.5rem; cursor: pointer;
+            color: #ff1493; transition: all 0.3s ease;
+        }
+        .audio-controls button:hover { transform: scale(1.2); color: #8a2be2; }
+        .audio-controls input { width: 100px; }
+    </style>
+</head>
+<body>
+
+<p class="page-title" style="margin-bottom:1.5rem;">🎂 Happy Birthday Jessica! 🎂</p>
+
+<div id="cake">
+
+    <!-- Candle on top -->
+    <div class="candle-wrap" onclick="blowCandle(this)">
+        <div class="smoke"></div>
+        <div class="flame"></div>
+        <div class="wick"></div>
+        <div class="candle-body"></div>
+    </div>
+
+    <!-- Top layer -->
+    <div class="layer layer-top">
+        <div class="layer-body">
+            <div class="dot" style="width:10px;height:10px;top:10px;left:20px;"></div>
+            <div class="dot" style="width:7px;height:7px;top:28px;left:60px;"></div>
+            <div class="dot" style="width:9px;height:9px;top:8px;left:110px;"></div>
+            <div class="dot" style="width:7px;height:7px;top:30px;left:155px;"></div>
+            <div class="dot" style="width:8px;height:8px;top:12px;left:190px;"></div>
+            <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-size:0.85rem;white-space:nowrap;">🍓 🍓 🍓</div>
+        </div>
+    </div>
+
+    <!-- Mid layer -->
+    <div class="layer layer-mid">
+        <div class="layer-body">
+            <div class="dot" style="width:8px;height:8px;top:8px;left:30px;"></div>
+            <div class="dot" style="width:10px;height:10px;top:28px;left:80px;"></div>
+            <div class="dot" style="width:7px;height:7px;top:10px;left:130px;"></div>
+            <div class="dot" style="width:9px;height:9px;top:26px;left:170px;"></div>
+            <div class="layer-label" style="top:50%;transform:translateY(-50%);font-size:0.75rem;">💕 Happy Birthday 💕</div>
+        </div>
+    </div>
+
+    <!-- Bottom layer -->
+    <div class="layer layer-bottom">
+        <div class="layer-body">
+            <div class="dot" style="width:9px;height:9px;top:10px;left:25px;"></div>
+            <div class="dot" style="width:7px;height:7px;top:32px;left:65px;"></div>
+            <div class="dot" style="width:11px;height:11px;top:8px;left:105px;"></div>
+            <div class="dot" style="width:7px;height:7px;top:35px;left:148px;"></div>
+            <div class="dot" style="width:9px;height:9px;top:12px;left:183px;"></div>
+        </div>
+    </div>
+
+    <div class="plate"></div>
+</div>
+
+<p class="tap-hint" id="tapHint">🕯️ Tap the candle to blow it out &amp; make a wish! 🌟</p>
+
+<!-- MESSAGE -->
+<div class="message-overlay" id="messageOverlay">
+    <div class="message-box">
+        <span class="big-emoji">💖</span>
+        <h2>Happy Birthday, My Love 🎂</h2>
+        <p>
+            Happy birthday, my love. I hope we spend many more years together.
+            I hope this year is filled with you achieving your goals, and I hope we celebrate
+            your birthday together next year, achieving our goals together.
+            I pray that we will always support each other, and that I will overcome this great
+            challenge with you, proving to everyone that I am worthy of you in the end.
+            You are my goal now. May God protect you, my love.
+            I love you so much and miss you even more.
+            I hope to see you soon, my love.
+            I love you my princess, and Happy birthday my dear 💕
+        </p>
+        <button class="close-btn" onclick="closeMessage()">💖 Thank You, My Love 💖</button>
+    </div>
+</div>
+
+<script>
+    let blown = false;
+
+    function blowCandle(wrap) {
+        if (blown) return;
+        blown = true;
+        wrap.querySelector('.flame').classList.add('out');
+        wrap.querySelector('.smoke').classList.add('puff');
+        spawnSparkles(wrap);
+        setTimeout(spawnConfetti, 400);
+        setTimeout(showMessage, 1300);
+    }
+
+    function spawnSparkles(wrap) {
+        const rect = wrap.getBoundingClientRect();
+        const emojis = ['✨','⭐','💫','🌟','💥','💖'];
+        for (let i = 0; i < 10; i++) {
+            const el = document.createElement('span');
+            el.className = 'sparkle';
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = (rect.left + Math.random() * 60 - 15) + 'px';
+            el.style.top  = (rect.top  + Math.random() * 30) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1400);
+        }
+    }
+
+    function spawnConfetti() {
+        const colors = ['#ff1493','#8a2be2','#ff8c00','#00c8ff','#ffe000','#ff69b4','#fff'];
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        for (let i = 0; i < 55; i++) {
+            const el = document.createElement('div');
+            el.className = 'confetti-piece';
+            el.style.left = cx + 'px';
+            el.style.top  = cy + 'px';
+            el.style.background = colors[Math.floor(Math.random() * colors.length)];
+            const angle = Math.random() * 360;
+            const dist  = 80 + Math.random() * 180;
+            el.style.setProperty('--tx',
+                `translate(${Math.cos(angle*Math.PI/180)*dist}px, ${Math.sin(angle*Math.PI/180)*dist}px)`);
+            el.style.animationDelay = (Math.random() * 0.25) + 's';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1800);
+        }
+    }
+
+    function showMessage() {
+        document.getElementById('messageOverlay').classList.add('show');
+    }
+    function closeMessage() {
+        document.getElementById('messageOverlay').classList.remove('show');
+    }
+</script>
+    <div class="audio-controls">
+        <button id="play-pause">▶️</button>
+        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5">
+    </div>
+    <audio id="birthday-song" loop>
+        <source src="https://archive.org/download/happy-birthday-instrumental/HAPPY%20BIRTHDAY%20INSTRUMENTAL.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        // ── PERSISTENT AUDIO ──
+        const audio = document.getElementById('birthday-song');
+        const playPauseButton = document.getElementById('play-pause');
+        const volumeControl = document.getElementById('volume-control');
+        let isPlaying = false;
+        const savedVol = localStorage.getItem('bdayVol');
+        if (savedVol) { audio.volume = savedVol; volumeControl.value = savedVol; }
+        else { audio.volume = 0.5; }
+        const wasPlaying = localStorage.getItem('bdayPlaying');
+        if (wasPlaying === 'true') {
+            audio.play().then(() => { isPlaying = true; playPauseButton.innerHTML = '⏸️'; }).catch(() => {});
+        }
+        playPauseButton.addEventListener('click', () => {
+            if (isPlaying) { audio.pause(); playPauseButton.innerHTML = '▶️'; localStorage.setItem('bdayPlaying','false'); }
+            else { audio.play(); playPauseButton.innerHTML = '⏸️'; localStorage.setItem('bdayPlaying','true'); }
+            isPlaying = !isPlaying;
+        });
+        volumeControl.addEventListener('input', () => {
+            audio.volume = volumeControl.value;
+            localStorage.setItem('bdayVol', volumeControl.value);
+        });
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('bdayPlaying', isPlaying ? 'true' : 'false');
+            localStorage.setItem('bdayVol', audio.volume);
+        });
+    </script>
+</body>
+</html>
